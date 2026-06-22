@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fantasy Shop — Marketplace de Objetos Virtuales</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-void: #080812;
+    --bg-deep: #0D0B1E;
+    --bg-card: #12102A;
+    --bg-card-hover: #1A1640;
+    --violet: #7B2FFF;
+    --violet-glow: #9B5FFF;
+    --gold: #FFD700;
+    --gold-dim: #C8A800;
+    --cyan: #00D4FF;
+    --red: #FF4D6D;
+    --green: #39FF7A;
+    --text-primary: #EEE8FF;
+    --text-secondary: #8A82B0;
+    --text-muted: #4A4470;
+    --border: rgba(123,47,255,0.25);
+    --border-gold: rgba(255,215,0,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-void);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── CANVAS DE RUNAS ── */
+  #runeCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.35;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 0 2rem;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8,8,18,0.85);
+    backdrop-filter: blur(12px);
+  }
+
+  .logo {
+    font-family: 'Cinzel', serif;
+    font-size: 1.4rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--violet-glow) 60%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.08em;
+  }
+
+  .logo span {
+    font-weight: 400;
+    opacity: 0.75;
+  }
+
+  .header-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 80px 2rem 60px;
+  }
+
+  .hero-eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--violet-glow);
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+
+  .hero h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2.4rem, 6vw, 5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    margin-bottom: 24px;
+    text-shadow: 0 0 60px rgba(123,47,255,0.4);
+  }
+
+  .hero h1 .line-gold {
+    background: linear-gradient(90deg, var(--gold) 0%, #FF9D00 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero h1 .line-white {
+    color: var(--text-primary);
+  }
+
+  .hero p {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    max-width: 520px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-value {
+    font-family: 'Cinzel', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* ── TABS NAVIGATION ── */
+  .main-tabs {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    padding: 0 2rem;
+    margin-bottom: 40px;
+  }
+
+  .tab-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 14px 32px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+  }
+
+  .tab-btn:first-child { border-radius: 8px 0 0 8px; }
+  .tab-btn:last-child { border-radius: 0 8px 8px 0; border-left: none; }
+
+  .tab-btn.active {
+    background: linear-gradient(135deg, rgba(123,47,255,0.3), rgba(0,212,255,0.1));
+    border-color: var(--violet);
+    color: var(--text-primary);
+    box-shadow: 0 0 20px rgba(123,47,255,0.2);
+  }
+
+  .tab-btn:hover:not(.active) {
+    background: rgba(123,47,255,0.08);
+    color: var(--text-primary);
+  }
+
+  /* ── PANELS ── */
+  .panel {
+    display: none;
+    position: relative;
+    z-index: 2;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 2rem 80px;
+  }
+
+  .panel.active { display: block; }
+
+  /* ── CARD BASE ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--violet), var(--cyan), transparent);
+  }
+
+  .card-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-title .icon {
+    font-size: 1.3rem;
+  }
+
+  .card-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  /* ── FORM ── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-grid .full { grid-column: 1 / -1; }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  label .required { color: var(--red); margin-left: 3px; }
+
+  input, select, textarea {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(123,47,255,0.2);
+    border-radius: 8px;
+    padding: 11px 14px;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    transition: all 0.25s ease;
+    outline: none;
+    width: 100%;
+  }
+
+  input::placeholder, textarea::placeholder {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--violet);
+    background: rgba(123,47,255,0.08);
+    box-shadow: 0 0 0 3px rgba(123,47,255,0.12);
+  }
+
+  select option {
+    background: var(--bg-card);
+    color: var(--text-primary);
+  }
+
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* ── RAREZA SELECTOR ── */
+  .rareza-grid {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .rareza-btn {
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    background: rgba(255,255,255,0.04);
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.05em;
+  }
+
+  .rareza-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  .rareza-btn.selected-comun      { background: rgba(150,150,150,0.2); border-color: #999; color: #ccc; }
+  .rareza-btn.selected-poco-comun { background: rgba(30,200,100,0.18); border-color: var(--green); color: var(--green); }
+  .rareza-btn.selected-raro       { background: rgba(0,140,255,0.18); border-color: #0AF; color: #0AF; }
+  .rareza-btn.selected-epico      { background: rgba(163,53,238,0.25); border-color: #A335EE; color: #C06EFF; }
+  .rareza-btn.selected-legendario { background: rgba(255,180,0,0.2); border-color: var(--gold); color: var(--gold); }
+  .rareza-btn.selected-mitico     { background: rgba(255,80,80,0.2); border-color: var(--red); color: var(--red); }
+
+  /* ── BUTTON ── */
+  .btn-primary {
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 14px 36px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--violet) 0%, #5B0FDF 100%);
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(123,47,255,0.5); }
+  .btn-primary:hover::after { opacity: 1; }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 14px 36px;
+    border: 1px solid var(--border-gold);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--gold);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255,215,0,0.08);
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(255,215,0,0.15);
+    transform: translateY(-2px);
+  }
+
+  /* ── NOTIFICACIONES ── */
+  .toast {
+    display: none;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    margin-top: 16px;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .toast.show { display: flex; }
+
+  .toast.success {
+    background: rgba(57,255,122,0.12);
+    border: 1px solid rgba(57,255,122,0.4);
+    color: var(--green);
+  }
+
+  .toast.error {
+    background: rgba(255,77,109,0.12);
+    border: 1px solid rgba(255,77,109,0.4);
+    color: var(--red);
+  }
+
+  /* ── BUSCADOR ── */
+  .search-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .search-bar input {
+    flex: 1;
+    font-size: 1rem;
+    padding: 13px 18px;
+    border-radius: 10px;
+  }
+
+  .search-bar button {
+    padding: 13px 28px;
+    white-space: nowrap;
+    border-radius: 10px;
+  }
+
+  /* ── RESULTADO DE BÚSQUEDA ── */
+  #resultContainer {
+    margin-top: 8px;
+  }
+
+  .result-not-found {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text-muted);
+  }
+
+  .result-not-found .big-icon { font-size: 3rem; margin-bottom: 12px; }
+  .result-not-found p { font-size: 0.9rem; line-height: 1.6; }
+
+  /* ── PRODUCTO CARD ── */
+  .product-result {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    animation: slideIn 0.4s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .product-header {
+    padding: 24px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .product-name {
+    font-family: 'Cinzel', serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+
+  .product-code {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-family: 'Inter', monospace;
+  }
+
+  .price-tag {
+    text-align: right;
+  }
+
+  .price-value {
+    font-family: 'Cinzel', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .price-currency {
+    font-size: 0.75rem;
+    color: var(--gold-dim);
+    margin-top: 2px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .product-body {
+    padding: 24px 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .detail-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .detail-row.full { grid-column: 1 / -1; }
+
+  .detail-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .detail-value {
+    font-size: 0.92rem;
+    color: var(--text-primary);
+    font-weight: 400;
+  }
+
+  /* ── RAREZA BADGES ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .badge-comun       { background: rgba(150,150,150,0.15); border: 1px solid #888; color: #ccc; }
+  .badge-poco-comun  { background: rgba(30,200,100,0.15); border: 1px solid var(--green); color: var(--green); }
+  .badge-raro        { background: rgba(0,140,255,0.15); border: 1px solid #0AF; color: #0AF; }
+  .badge-epico       { background: rgba(163,53,238,0.2); border: 1px solid #A335EE; color: #C06EFF; }
+  .badge-legendario  { background: rgba(255,180,0,0.15); border: 1px solid var(--gold); color: var(--gold); }
+  .badge-mitico      { background: rgba(255,80,80,0.15); border: 1px solid var(--red); color: var(--red); }
+
+  .stock-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.88rem;
+  }
+
+  .stock-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .stock-dot.in  { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .stock-dot.low { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+  .stock-dot.out { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+  /* ── INVENTARIO ── */
+  .inventory-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .inventory-count {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+
+  .inventory-count span {
+    color: var(--violet-glow);
+    font-weight: 600;
+  }
+
+  .inventory-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .inventory-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(123,47,255,0.12);
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    transition: border-color 0.2s;
+  }
+
+  .inventory-item:hover { border-color: var(--border); }
+
+  .inv-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+  }
+
+  .inv-code {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-family: monospace;
+    margin-top: 2px;
+  }
+
+  .inv-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .inv-price {
+    font-family: 'Cinzel', serif;
+    font-size: 0.88rem;
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .empty-inventory {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+  }
+
+  /* ── BOTONES ACCIONES ── */
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .product-body { grid-template-columns: 1fr; }
+    .detail-row.full { grid-column: 1; }
+    .search-bar { flex-direction: column; }
+    .main-tabs { flex-direction: column; align-items: center; }
+    .tab-btn { border-radius: 8px !important; border: 1px solid var(--border) !important; width: 100%; max-width: 280px; }
+    header { padding: 0 1rem; }
+    .hero { padding: 50px 1.5rem 40px; }
+    .panel { padding: 0 1.2rem 60px; }
+    .card { padding: 24px 20px; }
+  }
+
+  /* ── SECTION DIVIDER ── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+
+  .divider-text {
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* Scroll suave */
+  html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+
+<canvas id="runeCanvas"></canvas>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">Fantasy<span>Shop</span></div>
+  <div class="header-badge">⚔ Marketplace de Objetos Virtuales</div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">⚡ El mercado de los reinos fantásticos</div>
+  <h1>
+    <div class="line-gold">Compra, vende</div>
+    <div class="line-white">objetos legendarios</div>
+  </h1>
+  <p>Espadas épicas, armaduras mágicas, mascotas virtuales y reliquias míticas. Todo en un solo lugar, guardado en el registro eterno.</p>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-value" id="statTotal">0</div>
+      <div class="stat-label">Productos</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">∞</div>
+      <div class="stat-label">Categorías</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">6</div>
+      <div class="stat-label">Niveles de rareza</div>
+    </div>
+  </div>
+</section>
+
+<!-- TABS -->
+<div class="main-tabs">
+  <button class="tab-btn active" onclick="switchTab('register')">⚔ Registrar</button>
+  <button class="tab-btn" onclick="switchTab('search')">🔍 Buscar</button>
+  <button class="tab-btn" onclick="switchTab('inventory')">📦 Inventario</button>
+</div>
+
+<!-- PANEL REGISTRAR -->
+<div class="panel active" id="panel-register">
+  <div class="card">
+    <div class="card-title"><span class="icon">⚔</span> Registrar nuevo producto</div>
+    <div class="card-subtitle">Completa todos los campos para añadir un objeto al registro de Fantasy Shop. El código es único e irrepetible.</div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Código del producto <span class="required">*</span></label>
+        <input type="text" id="codigoProducto" placeholder="Ej: FNT001" maxlength="20">
+      </div>
+      <div class="field">
+        <label>Nombre del producto <span class="required">*</span></label>
+        <input type="text" id="nombreProducto" placeholder="Ej: Espada del Dragón Ancestral">
+      </div>
+      <div class="field">
+        <label>Categoría <span class="required">*</span></label>
+        <select id="categoria">
+          <option value="">— Seleccionar —</option>
+          <option>🗡 Espadas Legendarias</option>
+          <option>🛡 Armaduras Mágicas</option>
+          <option>🐉 Mascotas Virtuales</option>
+          <option>⚗ Pociones</option>
+          <option>🃏 Cartas Coleccionables</option>
+          <option>✨ Skins Exclusivas</option>
+          <option>🏺 Reliquias Míticas</option>
+          <option>💍 Accesorios Encantados</option>
+          <option>📜 Pergaminos de Hechizos</option>
+          <option>🪄 Artefactos Arcanos</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Vendedor <span class="required">*</span></label>
+        <input type="text" id="vendedor" placeholder="Nombre del vendedor">
+      </div>
+      <div class="field">
+        <label>Precio (monedas de oro) <span class="required">*</span></label>
+        <input type="number" id="precio" placeholder="0.00" min="0" step="0.01">
+      </div>
+      <div class="field">
+        <label>Stock disponible <span class="required">*</span></label>
+        <input type="number" id="stock" placeholder="0" min="0" step="1">
+      </div>
+      <div class="field full">
+        <label>Rareza <span class="required">*</span></label>
+        <div class="rareza-grid">
+          <button class="rareza-btn" data-rareza="Común" onclick="selectRareza(this)">⬜ Común</button>
+          <button class="rareza-btn" data-rareza="Poco Común" onclick="selectRareza(this)">🟩 Poco Común</button>
+          <button class="rareza-btn" data-rareza="Raro" onclick="selectRareza(this)">🟦 Raro</button>
+          <button class="rareza-btn" data-rareza="Épico" onclick="selectRareza(this)">🟪 Épico</button>
+          <button class="rareza-btn" data-rareza="Legendario" onclick="selectRareza(this)">🟨 Legendario</button>
+          <button class="rareza-btn" data-rareza="Mítico" onclick="selectRareza(this)">🟥 Mítico</button>
+        </div>
+        <input type="hidden" id="rareza" value="">
+      </div>
+      <div class="field full">
+        <label>Descripción</label>
+        <textarea id="descripcion" placeholder="Describe los atributos, poderes y origen de este objeto..."></textarea>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-primary" onclick="registrarProducto()">⚡ Registrar Producto</button>
+      <button class="btn-secondary" onclick="limpiarFormulario()">↺ Limpiar</button>
+    </div>
+
+    <div class="toast" id="toastRegister"></div>
+  </div>
+</div>
+
+<!-- PANEL BUSCAR -->
+<div class="panel" id="panel-search">
+  <div class="card">
+    <div class="card-title"><span class="icon">🔍</span> Buscar por código</div>
+    <div class="card-subtitle">Ingresa el código único del producto para ver todos sus detalles. El código es la clave de identificación irrepetible en el registro.</div>
+
+    <div class="search-bar">
+      <input type="text" id="codigoBuscado" placeholder="Ej: FNT001 — Ingresa el código exacto" onkeydown="if(event.key==='Enter') buscarProducto()">
+      <button class="btn-primary" onclick="buscarProducto()">🔍 Buscar</button>
+    </div>
+
+    <div id="resultContainer">
+      <div class="result-not-found">
+        <div class="big-icon">🗺</div>
+        <p>El registro está listo.<br>Ingresa un código para encontrar tu objeto.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL INVENTARIO -->
+<div class="panel" id="panel-inventory">
+  <div class="card">
+    <div class="card-title"><span class="icon">📦</span> Inventario completo</div>
+    <div class="card-subtitle">Todos los productos registrados en Fantasy Shop. Los campos clave permiten identificarlos incluso cuando comparten nombre.</div>
+
+    <div class="inventory-header">
+      <div class="inventory-count">Mostrando <span id="invCount">0</span> productos registrados</div>
+      <button class="btn-secondary" style="padding:8px 18px; font-size:0.75rem;" onclick="limpiarInventario()">🗑 Vaciar registro</button>
+    </div>
+
+    <div class="section-divider">
+      <div class="divider-line"></div>
+      <div class="divider-text">Registro de productos</div>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="inventory-list" id="inventoryList">
+      <div class="empty-inventory">✦ El registro está vacío. Registra tu primer producto.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── ESTADO ──
+const productos = [];
+let selectedRareza = '';
+
+// ── CANVAS DE RUNAS ──
+const canvas = document.getElementById('runeCanvas');
+const ctx = canvas.getContext('2d');
+const RUNES = ['ᚠ','ᚢ','ᚦ','ᚨ','ᚱ','ᚲ','ᚷ','ᚹ','ᚺ','ᚾ','ᛁ','ᛃ','ᛇ','ᛈ','ᛉ','ᛊ','ᛏ','ᛒ','ᛖ','ᛗ','ᛚ','ᛜ','ᛞ','ᛟ'];
+let particles = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function createParticles() {
+  particles = [];
+  const count = Math.floor(window.innerWidth / 60);
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vy: 0.15 + Math.random() * 0.35,
+      vx: (Math.random() - 0.5) * 0.2,
+      rune: RUNES[Math.floor(Math.random() * RUNES.length)],
+      size: 10 + Math.random() * 10,
+      opacity: 0.05 + Math.random() * 0.2,
+      color: Math.random() > 0.6 ? '#7B2FFF' : Math.random() > 0.5 ? '#FFD700' : '#00D4FF'
+    });
+  }
+}
+
+function animateRunes() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => {
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = p.opacity;
+    ctx.font = `${p.size}px serif`;
+    ctx.fillText(p.rune, p.x, p.y);
+    p.y += p.vy;
+    p.x += p.vx;
+    if (p.y > canvas.height + 20) { p.y = -20; p.x = Math.random() * canvas.width; }
+    if (p.x < -20) p.x = canvas.width + 20;
+    if (p.x > canvas.width + 20) p.x = -20;
+  });
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(animateRunes);
+}
+
+resizeCanvas();
+createParticles();
+animateRunes();
+window.addEventListener('resize', () => { resizeCanvas(); createParticles(); });
+
+// ── TABS ──
+function switchTab(tab) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'inventory') renderInventory();
+}
+
+// ── RAREZA ──
+function selectRareza(btn) {
+  document.querySelectorAll('.rareza-btn').forEach(b => {
+    b.className = 'rareza-btn';
+  });
+  selectedRareza = btn.dataset.rareza;
+  document.getElementById('rareza').value = selectedRareza;
+  const map = {
+    'Común': 'comun',
+    'Poco Común': 'poco-comun',
+    'Raro': 'raro',
+    'Épico': 'epico',
+    'Legendario': 'legendario',
+    'Mítico': 'mitico'
+  };
+  btn.classList.add('selected-' + map[selectedRareza]);
+}
+
+function getBadgeClass(rareza) {
+  const map = {
+    'Común': 'badge-comun',
+    'Poco Común': 'badge-poco-comun',
+    'Raro': 'badge-raro',
+    'Épico': 'badge-epico',
+    'Legendario': 'badge-legendario',
+    'Mítico': 'badge-mitico'
+  };
+  return map[rareza] || 'badge-comun';
+}
+
+function getRarezaIcon(rareza) {
+  const map = { 'Común':'⬜', 'Poco Común':'🟩', 'Raro':'🟦', 'Épico':'🟪', 'Legendario':'🟨', 'Mítico':'🟥' };
+  return map[rareza] || '◻';
+}
+
+// ── REGISTRAR PRODUCTO ──
+function registrarProducto() {
+  const toast = document.getElementById('toastRegister');
+  const campos = [
+    { id: 'codigoProducto', label: 'Código del producto' },
+    { id: 'nombreProducto', label: 'Nombre del producto' },
+    { id: 'categoria', label: 'Categoría' },
+    { id: 'vendedor', label: 'Vendedor' },
+    { id: 'precio', label: 'Precio' },
+    { id: 'stock', label: 'Stock' },
+  ];
+
+  for (const c of campos) {
+    const val = document.getElementById(c.id).value.trim();
+    if (!val) {
+      showToast(toast, 'error', `⚠ El campo "${c.label}" es obligatorio.`);
+      document.getElementById(c.id).focus();
+      return;
+    }
+  }
+
+  if (!selectedRareza) {
+    showToast(toast, 'error', '⚠ Selecciona la rareza del producto.');
+    return;
+  }
+
+  const codigo = document.getElementById('codigoProducto').value.trim().toUpperCase();
+  const existe = productos.find(p => p.codigoProducto === codigo);
+  if (existe) {
+    showToast(toast, 'error', `⚠ Ya existe un producto con el código "${codigo}". Los códigos son únicos.`);
+    return;
+  }
+
+  const nuevo = {
+    codigoProducto: codigo,
+    nombreProducto: document.getElementById('nombreProducto').value.trim(),
+    categoria: document.getElementById('categoria').value,
+    rareza: selectedRareza,
+    precio: parseFloat(document.getElementById('precio').value),
+    stock: parseInt(document.getElementById('stock').value),
+    vendedor: document.getElementById('vendedor').value.trim(),
+    descripcion: document.getElementById('descripcion').value.trim() || 'Sin descripción.'
+  };
+
+  productos.push(nuevo);
+  actualizarStat();
+  showToast(toast, 'success', `✔ Producto "${nuevo.nombreProducto}" registrado con código ${nuevo.codigoProducto}.`);
+  limpiarFormulario();
+}
+
+function limpiarFormulario() {
+  ['codigoProducto','nombreProducto','vendedor','precio','stock','descripcion'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('categoria').value = '';
+  document.getElementById('rareza').value = '';
+  selectedRareza = '';
+  document.querySelectorAll('.rareza-btn').forEach(b => b.className = 'rareza-btn');
+}
+
+// ── BUSCAR PRODUCTO ──
+function buscarProducto() {
+  const codigo = document.getElementById('codigoBuscado').value.trim().toUpperCase();
+  const container = document.getElementById('resultContainer');
+
+  if (!codigo) {
+    container.innerHTML = `<div class="result-not-found"><div class="big-icon">⚠</div><p>Ingresa un código para buscar.</p></div>`;
+    return;
+  }
+
+  const p = productos.find(x => x.codigoProducto === codigo);
+
+  if (!p) {
+    container.innerHTML = `
+      <div class="result-not-found">
+        <div class="big-icon">🚫</div>
+        <p><strong>No existe un producto con el código "${codigo}".</strong><br>
+        Verifica el código o registra el producto primero.</p>
+      </div>`;
+    return;
+  }
+
+  const stockClass = p.stock === 0 ? 'out' : p.stock <= 3 ? 'low' : 'in';
+  const stockText  = p.stock === 0 ? 'Sin stock' : p.stock <= 3 ? `${p.stock} (últimas unidades)` : p.stock;
+  const badgeClass = getBadgeClass(p.rareza);
+  const rarezaIcon = getRarezaIcon(p.rareza);
+
+  container.innerHTML = `
+    <div class="product-result">
+      <div class="product-header">
+        <div>
+          <div class="product-name">${escapeHtml(p.nombreProducto)}</div>
+          <div class="product-code">Código: ${escapeHtml(p.codigoProducto)}</div>
+        </div>
+        <div class="price-tag">
+          <div class="price-value">${Number(p.precio).toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
+          <div class="price-currency">Monedas de oro</div>
+        </div>
+      </div>
+      <div class="product-body">
+        <div class="detail-row">
+          <div class="detail-label">Categoría</div>
+          <div class="detail-value">${escapeHtml(p.categoria)}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Rareza</div>
+          <div class="detail-value">
+            <span class="badge ${badgeClass}">${rarezaIcon} ${escapeHtml(p.rareza)}</span>
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Vendedor</div>
+          <div class="detail-value">👤 ${escapeHtml(p.vendedor)}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Stock</div>
+          <div class="detail-value">
+            <span class="stock-indicator">
+              <span class="stock-dot ${stockClass}"></span>
+              ${stockText}
+            </span>
+          </div>
+        </div>
+        <div class="detail-row full">
+          <div class="detail-label">Descripción</div>
+          <div class="detail-value">${escapeHtml(p.descripcion)}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── INVENTARIO ──
+function renderInventory() {
+  const list = document.getElementById('inventoryList');
+  const count = document.getElementById('invCount');
+  count.textContent = productos.length;
+
+  if (productos.length === 0) {
+    list.innerHTML = '<div class="empty-inventory">✦ El registro está vacío. Registra tu primer producto.</div>';
+    return;
+  }
+
+  list.innerHTML = productos.map(p => {
+    const badgeClass = getBadgeClass(p.rareza);
+    return `
+      <div class="inventory-item">
+        <div>
+          <div class="inv-name">${escapeHtml(p.nombreProducto)}</div>
+          <div class="inv-code">${escapeHtml(p.codigoProducto)} · ${escapeHtml(p.categoria)}</div>
+        </div>
+        <div class="inv-right">
+          <span class="badge ${badgeClass}">${getRarezaIcon(p.rareza)} ${escapeHtml(p.rareza)}</span>
+          <div class="inv-price">${Number(p.precio).toLocaleString('es-AR',{minimumFractionDigits:2})} ✦</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function limpiarInventario() {
+  if (productos.length === 0) return;
+  if (confirm('¿Vaciar todo el registro? Esta acción eliminará todos los productos.')) {
+    productos.length = 0;
+    actualizarStat();
+    renderInventory();
+  }
+}
+
+// ── HELPERS ──
+function actualizarStat() {
+  document.getElementById('statTotal').textContent = productos.length;
+}
+
+function showToast(el, type, msg) {
+  el.className = 'toast show ' + type;
+  el.textContent = msg;
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => { el.classList.remove('show'); }, 4000);
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
